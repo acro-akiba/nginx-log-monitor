@@ -1,17 +1,33 @@
-filebeat.config:
-  modules:
-    path: ${path.config}/modules.d/*.yml
-    reload.enabled: false
+# Nginx Module Setting
+filebeat.modules:
+- module: nginx
 
-processors:
-  - add_cloud_metadata: ~
-  - add_docker_metadata: ~
+  # Access logs
+  access:
+    enabled: true
+    var.paths: ["/data/nginx/logs/access.log"]
 
-filebeat.inputs:
-- type: log
-  enabled: true
-  paths:
-    - /data/nginx/logs/*.log
+  # Error logs
+  error:
+    enabled: true
+    var.paths: ["/data/nginx/logs/error.log"]
 
+# Elasticsearch template setting
+setup.template.settings:
+  index.number_of_shards: 1
+  index.number_of_replicas: 0
+
+# Kibana setting
+setup.kibana:
+  host: "0.0.0.0:5601"
+
+# Elasticsearch output
 output.elasticsearch:
   hosts: "${ELASTICSEARCH_HOST}:${ELASTICSEARCH_PORT}"
+
+# Processors
+processors:
+  - add_host_metadata: ~
+  - add_cloud_metadata: ~
+  - add_docker_metadata: ~
+  - add_kubernetes_metadata: ~
